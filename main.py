@@ -1,20 +1,22 @@
 import os
 from google.cloud import bigquery
-from google.cloud import storage
+from datetime import datetime
 
-def insert_data_to_bigquery(data, context):
-    bigquery_client = bigquery.Client()
-    
-    dataset_id = os.environ.get('BIGQUERY_DATASET_ID')
-    table_id = os.environ.get('BIGQUERY_TABLE_ID')
-    
-    table_ref = bigquery_client.dataset(dataset_id).table(table_id)
-    table = bigquery_client.get_table(table_ref)
-    
-    rows_to_insert = [data]
-    
-    errors = bigquery_client.insert_rows(table, rows_to_insert)
+def bigquery_insert_data(request):
+    client = bigquery.Client()
+    table_id = os.environ.get("BIGQUERY_TABLE_ID")
+
+    rows_to_insert = [
+        {
+            "field1": "value1",
+            "field2": "value2",
+            "inserted_at": datetime.utcnow().isoformat()
+        },
+    ]
+
+    errors = client.insert_rows_json(table_id, rows_to_insert)
+
     if errors == []:
-        print('Data inserted successfully!')
+        return "Inserted rows into {}.".format(table_id), 200
     else:
-        print('Errors:', errors)
+        return "Encountered errors while inserting rows: {}".format(errors), 400
