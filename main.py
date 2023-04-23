@@ -30,7 +30,7 @@ def updateToken(token):
 def build_date_list():
     date_array = []    
     JST = timezone(timedelta(hours=+9),'JST')
-    for i in range(0, 1):
+    for i in range(1, 2):
         date = datetime.now(JST).date() - timedelta(days = i)
         date_array.append(str(date))
     return date_array
@@ -76,12 +76,30 @@ def convert_dict_to_dataframe(dic,column_names,index_name):
     return converted_df    
 
 
+def get_bq_fitbit_df():
+    project_id = os.environ.get("BIGQUERY_PROJECT_ID")
+    dataset_id = os.environ.get("BIGQUERY_DARASET_ID")
+    table_id = os.environ.get("BIGQUERY_TABLE_ID")
+    bigquery_client = bigquery.Client()
+
+    # SQL クエリを作成
+    query = f"""
+    SELECT *
+    FROM `{project_id}.{dataset_id}.{table_id}`
+    """
+
+    query_job = bigquery_client.query(query)
+    fitbit_df = query_job.to_dataframe()
+
+    return fitbit_df
+
+
 def append_data_to_bigquery(request, context):
     project_id = os.environ.get("BIGQUERY_PROJECT_ID")
     dataset_id = os.environ.get("BIGQUERY_DARASET_ID")
     table_id = os.environ.get("BIGQUERY_TABLE_ID")
     dataset_table_id = f"{dataset_id}.{table_id}"
-    client = fitbit.Fitbit(CLIENT_ID, CLIENT_SECRET,
+    fitbit_client = fitbit.Fitbit(CLIENT_ID, CLIENT_SECRET,
                        access_token = access_token, refresh_token = refresh_token, refresh_cb = updateToken)
 
     # 必要なメトリクス
@@ -89,20 +107,21 @@ def append_data_to_bigquery(request, context):
     sleep_metrics = ['timeInBed','minutesAwake','minutesAsleep','restlessCount','restlessDuration','minutesToFallAsleep','startTime','endTime','awakeDuration','awakeningsCount','minuteData']
     sleep_levels = ['deep', 'light', 'rem', 'wake']
 
-    # 時系列リストの生成
     dates_list = build_date_list()
-    # 日別データの取得 -> DataFrameに変換
-    ## データの取得
-    days_result_dict = build_days_metrics_dict(client, dates_list, activity_metrics, sleep_metrics, sleep_levels)
+    days_result_dict = build_days_metrics_dict(fitbit_client, dates_list, activity_metrics, sleep_metrics, sleep_levels)
 
-    ## DataFrameに変換
     days_clumns_name = activity_metrics + sleep_metrics + sleep_levels
-    days_result_df = convert_dict_to_dataframe(days_result_dict,days_clumns_name,'date')
-    days_result_df["startTime"] = days_result_df["startTime"].astype(str)
-    days_result_df["endTime"] = days_result_df["endTime"].astype(str)
-    days_result_df["minuteData"] = days_result_df["minuteData"].astype(str)
+    today_fitbit_df = convert_dict_to_dataframe(days_result_dict,days_clumns_name,'date')
+    today_fitbit_df["startTime"] = today_fitbit_df["startTime"].astype(str)
+    today_fitbit_df["endTime"] = today_fitbit_df["endTime"].astype(str)
+    today_fitbit_df["minuteData"] = today_fitbit_df["minuteData"].astype(str)
 
-    pandas_gbq.to_gbq(days_result_df, dataset_table_id, project_id, if_exists='append')
+    previous_fitbit_df = get_bq_fitbit_df()
+
+    concat_dataframe = pd.concat([previous_fitbit_df, today_fitbit_df], ignore_index=False)
+    concat_dataframe.drop_duplicates(inplace=True)
+
+    pandas_gbq.to_gbq(concat_dataframe, dataset_table_id, project_id, if_exists='replace')
 
     return 'Data has been appended to the table.', 200
 
