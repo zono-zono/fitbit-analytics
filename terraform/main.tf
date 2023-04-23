@@ -115,8 +115,8 @@ resource "google_pubsub_topic" "trigger_topic" {
 
 resource "google_cloud_scheduler_job" "daily_job" {
   name             = "fitbit-api-job"
-  schedule         = "0 4 * * *"
-  time_zone        = "UTC"
+  schedule         = "0 1 * * *"
+  time_zone        = "Asia/Tokyo"
   description      = "This job triggers the Cloud Function daily at 4:00 UTC."
   
   pubsub_target {
