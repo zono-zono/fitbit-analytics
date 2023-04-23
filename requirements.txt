@@ -1,2 +1,8 @@
-google-cloud-bigquery==2.26.0
-google-cloud-storage==1.42.0
+google-cloud-bigquery
+google-cloud-storage
+google-auth
+google-auth-httplib2
+google-api-python-client
+pandas
+pandas_gbq
+fitbit

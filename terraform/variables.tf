@@ -37,3 +37,15 @@ variable "credential_path" {
   type        = string
   description = "Path to the GCP service account credentials JSON file"
 }
+
+variable "fitbit_credential_path" {
+  type        = string
+}
+
+variable "fitbit_client_id" {
+  type        = string
+}
+
+variable "fitbit_client_secret" {
+  type        = string
+}

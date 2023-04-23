@@ -1,2 +1,4 @@
 terraform.tfvars
 cred.json
+fitbit_credential.txt
+df.csv
