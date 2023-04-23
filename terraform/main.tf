@@ -23,7 +23,7 @@ resource "google_bigquery_table" "warehouse_health_sleep" {
 }
 
 resource "google_bigquery_job" "load_csv" {
-  job_id = "load_csv_job2"
+  job_id = "load_csv_job"
 
   load {
     destination_table {
@@ -42,6 +42,7 @@ resource "google_bigquery_job" "load_csv" {
     autodetect            = true
     write_disposition = "WRITE_TRUNCATE"
   }
+  location = var.region
 }
 
 resource "google_bigquery_dataset" "fitbit_analytics_dataset" {
