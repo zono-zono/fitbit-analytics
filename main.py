@@ -21,10 +21,11 @@ refresh_token = token_dict['refresh_token']
 
 
 def updateToken(token):
-    f = open(TOKEN_FILE, 'w')
-    f.write(str(token))
-    f.close()
-    return
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
+    blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
+    # GCSのオブジェクトを更新
+    blob.upload_from_string(token, content_type='application/json')
 
 
 def build_date_list():
@@ -120,6 +121,7 @@ def append_data_to_bigquery(request, context):
 
     concat_dataframe = pd.concat([previous_fitbit_df, today_fitbit_df], ignore_index=False)
     concat_dataframe.drop_duplicates(inplace=True)
+    print(concat_dataframe.tail())
 
     pandas_gbq.to_gbq(concat_dataframe, dataset_table_id, project_id, if_exists='replace')
 
