@@ -7,6 +7,7 @@ import pandas as pd
 import time
 from datetime import datetime, timedelta, timezone
 import pandas_gbq
+import json
 
 storage_client = storage.Client()
 bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
@@ -24,8 +25,10 @@ def updateToken(token):
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
     blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
+    data_str = json.dumps(token)
+    data_bytes = data_str.encode('utf-8')
     # GCSのオブジェクトを更新
-    blob.upload_from_string(token, content_type='application/json')
+    blob.upload_from_string(data_bytes)
 
 
 def build_date_list():
