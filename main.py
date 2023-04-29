@@ -14,6 +14,8 @@ bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
 blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
 test_txt_content = blob.download_as_text()
 token_dict = literal_eval(test_txt_content)
+print('!!!!!!!Current Token!!!!!!:')
+print(token_dict)
 
 CLIENT_ID = os.environ.get("FITBIT_CLIENT_ID")
 CLIENT_SECRET = os.environ.get("FITBIT_CLIENT_SECRET")
@@ -22,14 +24,16 @@ refresh_token = token_dict['refresh_token']
 
 
 def updateToken(token):
+    print('UPDATE!!!!!!!!!!!!!!!!')
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
     blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
-    data_str = json.dumps(token)
-    data_bytes = data_str.encode('utf-8')
+    json_token = json.dumps(token)
+    bytes_token = json_token.encode() 
+    print('!!!!!!!New Token!!!!!!: ')
+    print(bytes_token)
     # GCSのオブジェクトを更新
-    blob.upload_from_string(data_bytes)
-
+    blob.upload_from_string(bytes_token)
 
 def build_date_list():
     date_array = []    
