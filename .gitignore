@@ -1,4 +1,8 @@
 terraform.tfvars
+terraform.tfstate
+.terraform/*
+.terraform.lock.hcl
 cred.json
 fitbit_credential.txt
 df.csv
+__pycache_-

@@ -48,33 +48,33 @@ def build_days_metrics_dict(authed_client,dates_list, activity_metrics, sleep_me
     days_result_dict = {}
 
     for date in dates_list:
-        singleday_activity_metrics = []        
+        day_metrics = []        
 
         activity_metrics = activity_metrics
         activity_response = authed_client.activities(date=date)
 
         for activity_metrics_name in activity_metrics:
             try:
-                singleday_activity_metrics.append(activity_response['summary'][activity_metrics_name])
+                day_metrics.append(activity_response['summary'][activity_metrics_name])
             except:
-                singleday_activity_metrics.append(0)                
+                day_metrics.append(0)                
 
         sleep_metrics = sleep_metrics
         sleep_response = authed_client.sleep(date=date)
 
         for sleep_metrics_name in sleep_metrics:
             try:
-                singleday_activity_metrics.append(sleep_response["sleep"][0][sleep_metrics_name])
+                day_metrics.append(sleep_response["sleep"][0][sleep_metrics_name])
             except:
-                singleday_activity_metrics.append(0)
+                day_metrics.append(0)
 
         for sleep_level in sleep_levels:
           try:
-            singleday_activity_metrics.append(sleep_response['summary']['stages'][sleep_level])
+            day_metrics.append(sleep_response['summary']['stages'][sleep_level])
           except:
-            singleday_activity_metrics.append(0)
+            day_metrics.append(0)
 
-        days_result_dict[date] = singleday_activity_metrics
+        days_result_dict[date] = day_metrics
 
     return days_result_dict
 
