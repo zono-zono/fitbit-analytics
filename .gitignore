@@ -1,5 +1,6 @@
 terraform.tfvars
 terraform.tfstate
+terraform/.terraform
 .terraform/*
 .terraform.lock.hcl
 cred.json
