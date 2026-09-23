@@ -1,0 +1,16 @@
+# cp terraform.tfvars.example terraform.tfvars して埋める。
+# terraform.tfvars は .gitignore 済み。コミットしないこと。
+#
+# fitbit_client_secret はここには書かない。Secret Manager に直接入れる:
+#   gcloud secrets versions add fitbit-client-secret --data-file=- <<< "<新しい secret>"
+
+project_id = "<GCP プロジェクト ID>"
+region     = "asia-northeast1"
+
+bucket_name = "<Cloud Function 用バケット名>"
+
+bigquery_dataset_id = "fitbit_analytics"
+bigquery_table_id   = "warehouse_health_sleep2"
+
+# Fitbit の Client ID は OAuth の仕様上公開される値なので秘密ではない
+fitbit_client_id = "<Fitbit Client ID>"
