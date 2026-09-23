@@ -1,17 +1,29 @@
-import os
-import pandas as pd
-from google.cloud import bigquery, storage
-import fitbit
-from ast import literal_eval
-import pandas as pd
-import time
-from datetime import datetime, timedelta, timezone
-import pandas_gbq
-import json
+"""GCS 上のトークンの状態を確認する運用スクリプト。
 
-storage_client = storage.Client()
-bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
-blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
-test_txt_content = blob.download_as_text()
-token_dict = literal_eval(test_txt_content)
-print(token_dict)
+トークンの値そのものは出力しない。値が必要な場合は
+`gsutil cat gs://$FITBIT_CREDENTIAL_BUCKET/$FITBIT_CREDENTIAL_OBJECT` を
+直接使うこと（端末履歴に残る点には注意）。
+"""
+
+import os
+from datetime import datetime, timezone
+
+from main import load_token
+
+
+def main():
+    token = load_token()
+
+    print(f"バケット : {os.environ['FITBIT_CREDENTIAL_BUCKET']}")
+    print(f"オブジェクト: {os.environ['FITBIT_CREDENTIAL_OBJECT']}")
+    print(f"保持キー : {sorted(token.keys())}")
+
+    expires_at = token.get("expires_at")
+    if expires_at:
+        expires = datetime.fromtimestamp(float(expires_at), tz=timezone.utc)
+        remaining = expires - datetime.now(timezone.utc)
+        print(f"有効期限 : {expires.isoformat()} (残り {remaining})")
+
+
+if __name__ == "__main__":
+    main()

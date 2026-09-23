@@ -1,31 +1,37 @@
-import os
-import pandas as pd
-from google.cloud import bigquery, storage
-import fitbit
-from ast import literal_eval
-import pandas as pd
-import time
-from datetime import datetime, timedelta, timezone
-import pandas_gbq
+"""初回のトークンを GCS に配置するブートストラップ用スクリプト。
+
+Fitbit の認可フローで取得した access_token / refresh_token を
+ローカルの JSON ファイルに置いてから 1 度だけ実行する。
+以降の更新は Cloud Function 側の save_token() が行う。
+
+このスクリプトが読むファイルは .gitignore 済み。コミットしないこと。
+"""
+
 import json
+import os
+import sys
 
-# ファイルを読み込む関数
-def read_file(file_path):
-    with open(file_path, 'r', encoding='utf-8') as file:
-        content = file.read()
-    return content
+from google.cloud import storage
 
-# ファイルのパスを指定
-file_path = 'fitbit_credential.txt'
+DEFAULT_TOKEN_FILE = "fitbit_credential.txt"
 
-# ファイルを読み込み、文字列を取得
-text = read_file(file_path)
 
-# 取得した文字列を出力
-print(text)
+def main(file_path):
+    with open(file_path, encoding="utf-8") as f:
+        token = json.load(f)
 
-# GCSのオブジェクトを更新
-storage_client = storage.Client()
-bucket = storage_client.get_bucket(os.environ.get("FITBIT_CREDENTIAL_BUCKET"))
-blob = bucket.get_blob(os.environ.get("FITBIT_CREDENTIAL_OBJECT"))
-blob.upload_from_string(text)
+    missing = {"access_token", "refresh_token"} - token.keys()
+    if missing:
+        raise SystemExit(f"必須キーがありません: {sorted(missing)}")
+
+    bucket_name = os.environ["FITBIT_CREDENTIAL_BUCKET"]
+    object_name = os.environ["FITBIT_CREDENTIAL_OBJECT"]
+
+    storage.Client().bucket(bucket_name).blob(object_name).upload_from_string(
+        json.dumps(token)
+    )
+    print(f"アップロードしました: gs://{bucket_name}/{object_name}")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_TOKEN_FILE)
