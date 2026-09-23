@@ -1,9 +1,38 @@
-terraform.tfvars
-terraform.tfstate
-terraform/.terraform
-.terraform/*
-.terraform.lock.hcl
+# --- 認証情報。絶対にコミットしない ---
 cred.json
+*-sa-key.json
 fitbit_credential.txt
+.env
+
+# --- Terraform ---
+# tfvars / tfstate / plan ファイルはいずれも変数の値を平文で持つ
+terraform.tfvars
+*.auto.tfvars
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+.terraform/
+.terraform.lock.hcl
+
+# terraform plan -out=<name> は任意の名前で出力できるため、
+# 拡張子の無い plan ファイルが紛れ込みうる。plan は必ず上のパターンに合う名前で出すこと。
+
+# --- ビルド成果物 ---
+# Cloud Function の zip は data "archive_file" が生成する
+cloud_function.zip
+*.zip
+
+# --- データ ---
 df.csv
-__pycache_-
+*.csv
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Terraform の archive_file 出力先
+terraform/.build/

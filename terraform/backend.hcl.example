@@ -1,0 +1,6 @@
+# terraform init -backend-config=backend.hcl で読み込む。
+# このバケットは Terraform の管理対象外として、事前に 1 度だけ作成する:
+#   gsutil mb -l asia-northeast1 gs://<PROJECT_ID>-tfstate
+#   gsutil versioning set on gs://<PROJECT_ID>-tfstate
+bucket = "<PROJECT_ID>-tfstate"
+prefix = "fitbit-analytics"
