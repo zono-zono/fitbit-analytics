@@ -1,0 +1,19 @@
+# 既定ルールに加えて、このリポジトリで実際に漏れた形の値を検出する。
+#
+# 注意: Terraform の plan はバイナリなので正規表現では取りこぼす。
+# ファイル名も任意に付けられる（今回漏れたものは
+# "google_storage_bucket_object.function_archive" という名前だった）。
+# 構造での検出は scripts/check_tf_artifacts.py が担当する。
+[extend]
+useDefault = true
+
+[[rules]]
+id = "client-secret-hex32"
+description = "client_secret の近くにある 32 桁の 16 進数"
+regex = '''(?is)client[_-]?secret.{0,40}?([a-f0-9]{32})'''
+secretGroup = 1
+
+[[rules]]
+id = "terraform-state-or-plan-path"
+description = "Terraform の state / plan（変数の値を平文で含む）"
+path = '''(?i)(\.tfstate(\.backup)?$|\.tfplan$|tfplan$)'''
